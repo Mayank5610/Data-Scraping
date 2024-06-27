@@ -1,0 +1,135 @@
+const puppeteer = require("puppeteer");
+const xl = require("excel4node");
+const wb = new xl.Workbook();
+const ws = wb.addWorksheet("MRERA");
+
+//https://maharerait.mahaonline.gov.in/SearchList/Search
+(async () => {
+  try {
+    const browser = await puppeteer.launch({
+      headless: false,
+      defaultViewport: null,
+    });
+    const page = await browser.newPage();
+    await page.goto(
+      "https://maharerait.mahaonline.gov.in/searchlist/search?MenuID=1069",
+      {
+        waitUntil: "networkidle2", // Mistake Done
+        timeout: 0,
+      }
+    );
+
+    // Mistake Done
+    await page.waitForSelector("#Promoter");
+    await page.$eval("#Promoter", (elem) => elem.click());
+    await page.click("#Promoter");
+
+    await page.waitForSelector("#btnAdvance");
+    await page.click("#btnAdvance");
+
+    await page.waitForSelector("#State");
+    await page.select("#State", "27");
+
+    await page.waitForSelector("#PType");
+    await page.select("#PType", "13");
+
+    await page.waitForSelector("#District");
+    await page.select("#District", "519");
+
+    await page.waitForSelector("#btnSearch");
+    await page.click("#btnSearch");
+
+    await page.waitForNavigation();
+
+    const tableLists = await page.evaluate(() => {
+      const projectName = document.querySelectorAll(
+        "tbody > tr > td:nth-child(2)"
+      );
+      const promoterName = document.querySelectorAll(
+        "tbody > tr > td:nth-child(3)"
+      );
+      const projArr = [];
+      const promotArr = [];
+      const combinedArr = [];
+
+      projectName.forEach((name) => {
+        projArr.push(name.innerText);
+      });
+
+      promoterName.forEach((name) => {
+        promotArr.push(name.innerText);
+      });
+
+      for (let i = 0; i < projArr.length; i++) {
+        const obj = {
+          "Project Name": projArr[i],
+          "Promoter Name": promotArr[i],
+        };
+        combinedArr.push(obj);
+      }
+
+      return combinedArr;
+    });
+
+    console.log(tableLists);
+
+    // Get all "View" links and click each one
+    const viewLinks = await page.$$("tbody tr td:nth-child(5) a");
+    for (const viewLink of viewLinks) {
+      const newPagePromise = new Promise((resolve) =>
+        browser.once("targetcreated", (target) => resolve(target.page()))
+      );
+
+      // Get all "View" links and click each one
+      await viewLink.click();
+
+      // Wait for the new tab to open and get the page instance
+      const detailPage = await newPagePromise;
+
+      // Extract desired data from the detail page
+      const contactNumber = await detailPage.$eval(
+        ".col-md-3.col-sm-3",
+        (element) => element.textContent.trim()
+      );
+      const website = await detailPage.$eval(".col-md-3.col-sm-3", (element) =>
+        element.textContent.trim()
+      );
+      const projectStatus = await detailPage.$eval(
+        ".col-md-3.col-sm-3",
+        (element) => element.textContent.trim()
+      );
+    }
+
+    // Excel
+    // Define column headers based on object keys
+    const headers = Object.keys(tableLists[0]);
+    headers.forEach((header, columnIndex) => {
+      ws.cell(1, columnIndex + 1).string(header); // Write headers to the first row
+    });
+
+    // Populate the worksheet with the data from the array of objects
+    tableLists.forEach((obj, rowIndex) => {
+      headers.forEach((header, columnIndex) => {
+        const value = obj[header]; // Get the value based on the header
+        ws.cell(rowIndex + 2, columnIndex + 1).string(String(value)); // Write data to the worksheet
+      });
+    });
+
+    // Save the workbook to a file
+    wb.write("MRERA.xlsx", (err, stats) => {
+      if (err) {
+        console.error("Error occurred while writing Excel file:", err);
+      } else {
+        console.log(`Excel file "MRERA.xlsx" has been created successfully.`);
+      }
+    });
+
+    // await browser.close();
+  } catch (error) {
+    console.log("Error: ", error);
+  }
+})();
+
+Office Number
+Website URL
+Project Status

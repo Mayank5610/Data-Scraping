@@ -1,0 +1,119 @@
+      //   const tableLists = await page.evaluate(() => {
+      //     const lists = document.querySelectorAll("tbody > tr > td");
+      //     const listArr = [];
+      //     const views = [];
+
+      //     lists.forEach((list) => {
+      //       listArr.push(list.innerText); // innerText
+      //     });
+
+      //     return { listArr };
+      //   });
+
+      //   console.log(tableLists);
+
+      
+
+      Save data To Excel method
+    // const headingColumnNamesAlias = ["Porject Name", "Promoter Name"];
+    // let rowIndex = 2;
+    // let headingColumnIndex = 1;
+    // headingColumnNamesAlias.forEach((heading) => {
+    //   ws.cell(1, headingColumnIndex).string(heading);
+    //   headingColumnIndex += 1;
+    // });
+
+    // let colIndex = 1;
+    // for (const column of tableLists) {
+    //   ws.cell(rowIndex, colIndex).string(column);
+    //   rowIndex++;
+    // }
+    // colIndex++;
+    // wb.write("MRERA.xlsx");
+
+    Return this
+
+
+
+        //   View click => Working
+    // const links = await page.evaluate(() => {
+    //   const viewBtn = document.querySelector("tbody > tr > td:nth-child(5) a");
+    //   const linkBtn = viewBtn.getAttribute("href");
+
+    //   if (viewBtn) {
+    //     viewBtn.click();
+    //   } else {
+    //     console.log("View Button not Found :)");
+    //   }
+    //   return linkBtn;
+    // });
+    // console.log(links);
+    // const currentURL = page.url();
+    // console.log(currentURL);
+
+        // Change the code if not work
+
+    // const links = await page.evaluate(() => {
+    //   const btnLists = document.querySelectorAll(
+    //     "tbody > tr > td:nth-child(5) a"
+    //   );
+    //   //   const btnArr = [];
+
+    //   btnLists.forEach((btn) => {
+    //     const linkBtn = btn.getAttribute("href");
+    //     if (btn) {
+    //       btn.click();
+    //     } else {
+    //       console.log("View Button Not Found :)");
+    //     }
+    //     return linkBtn;
+    //   });
+    // });
+
+    // change the above code if not work
+
+        // await page.goto(`https://maharerait.mahaonline.gov.in/${links}`, {
+    //   waitUntil: "networkidle2",
+    //   timeout: 0,
+    // });
+
+    // await page.waitForNavigation();
+
+    // console.log(page.url());
+
+    // **********   ABOVE CODE WORKING  **********
+
+    // const viewList = await page.evaluate(() => {
+    //   const lists = document.querySelectorAll(".col-md-3.col-sm-3");
+    //   const listsArr = [];
+
+    //   lists.forEach((list) => {
+    //     listsArr.push(list.innerText);
+    //   });
+    //   console.log(listsArr[33]);
+    //   //   return { listsArr };
+    //   const number = listsArr[33];
+    //   const webLink = listsArr[35];
+    //   return [{ number }, { webLink }];
+    // });
+    // console.log("##########  DATAS ##########");
+    // console.log(viewList);
+
+    for (let i = 0; i < rows.length; i++) {
+      const cloumns = await rows[i].$$(
+        "td:nth-child(2), td:nth-child(3)"
+      );
+      const rowData = {};
+
+      for (let j = 0; j < cloumns.length; j++) {
+        const columnName = columnNames[j];
+        const cellData = await cloumns[j].evaluate((node) =>
+          node.innerText.trim()
+        );
+        rowData[columnName] = cellData;
+        // rowData.push(cellData);
+      }
+      //   console.log(rowData);
+      scrapedData.push(rowData);
+    }
+    console.log(scrapedData);
